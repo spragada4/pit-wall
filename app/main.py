@@ -1,7 +1,13 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from app.fetch_data import init_db, fetch_standings, get_standings_from_db
 
-app = FastAPI(title="Pit Wall API")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()
+    yield
+
+app = FastAPI(title="Pit Wall API", lifespan=lifespan)
 
 @app.on_event("startup")
 def startup():
