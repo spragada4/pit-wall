@@ -70,6 +70,7 @@ def get_standings_from_db(season: str = "current"):
     conn.close()
     return result
 
+
 if __name__ == "__main__":
     init_db()
     fetch_standings()
