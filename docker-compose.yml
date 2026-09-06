@@ -1,0 +1,9 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/code/data
+    environment:
+      - DB_PATH=/code/data/f1.db
