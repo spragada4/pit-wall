@@ -1,8 +1,9 @@
 import sqlite3
 import httpx
+import os
 
 BASE_URL = "https://api.jolpi.ca/ergast/f1"
-DB_PATH = "f1.db"
+DB_PATH = os.environ.get("DB_PATH", "f1.db")
 
 def get_connection():
     return sqlite3.connect(DB_PATH)
