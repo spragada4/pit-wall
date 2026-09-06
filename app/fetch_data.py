@@ -5,12 +5,15 @@ import os
 BASE_URL = "https://api.jolpi.ca/ergast/f1"
 DB_PATH = os.environ.get("DB_PATH", "f1.db")
 
+
 def get_connection():
     return sqlite3.connect(DB_PATH)
 
+
 def init_db():
     conn = get_connection()
-    conn.execute("""
+    conn.execute(
+        """
         CREATE TABLE IF NOT EXISTS standings (
             season TEXT,
             position TEXT,
@@ -19,9 +22,11 @@ def init_db():
             points TEXT,
             PRIMARY KEY (season, driver)
         )
-    """)
+    """
+    )
     conn.commit()
     conn.close()
+
 
 def fetch_standings(season: str = "current"):
     url = f"{BASE_URL}/{season}/driverStandings.json"
@@ -36,28 +41,31 @@ def fetch_standings(season: str = "current"):
     for entry in standings_list[0]["DriverStandings"]:
         driver = f'{entry["Driver"]["givenName"]} {entry["Driver"]["familyName"]}'
         constructor = entry["Constructors"][0]["name"]
-        rows.append((
-            standings_list[0]["season"],
-            entry["position"],
-            driver,
-            constructor,
-            entry["points"],
-        ))
+        rows.append(
+            (
+                standings_list[0]["season"],
+                entry["position"],
+                driver,
+                constructor,
+                entry["points"],
+            )
+        )
 
     conn = get_connection()
-    conn.executemany(
-        "INSERT OR REPLACE INTO standings VALUES (?, ?, ?, ?, ?)", rows
-    )
+    conn.executemany("INSERT OR REPLACE INTO standings VALUES (?, ?, ?, ?, ?)", rows)
     conn.commit()
     conn.close()
     return rows
 
+
 def get_standings_from_db(season: str = "current"):
     conn = get_connection()
-    cur = conn.execute(
-        "SELECT position, driver, constructor, points FROM standings WHERE season = ? OR ? = 'current' ORDER BY CAST(position AS INTEGER)",
-        (season, season),
+    query = (
+        "SELECT position, driver, constructor, points "
+        "FROM standings WHERE season = ? OR ? = 'current' "
+        "ORDER BY CAST(position AS INTEGER)"
     )
+    cur = conn.execute(query, (season, season))
     result = cur.fetchall()
     conn.close()
     return result
