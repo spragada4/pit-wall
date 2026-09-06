@@ -8,10 +8,11 @@ pipeline {
 
     stages {
         stage('Free Practice: Lint') {
+            agent {
+                docker { image 'python:3.11-slim' }
+            }
             steps {
                 sh '''
-                    python3 -m venv .ci-venv
-                    . .ci-venv/bin/activate
                     pip install -r requirements.txt
                     flake8 app --max-line-length=120 --exclude=app/tests
                 '''
@@ -19,9 +20,12 @@ pipeline {
         }
 
         stage('Free Practice: Test') {
+            agent {
+                docker { image 'python:3.11-slim' }
+            }
             steps {
                 sh '''
-                    . .ci-venv/bin/activate
+                    pip install -r requirements.txt
                     pytest app/tests
                 '''
             }
