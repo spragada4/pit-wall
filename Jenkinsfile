@@ -60,13 +60,13 @@ pipeline {
             }
         }
 
-        stage('Safety Car: Health Gate') {
+                stage('Safety Car: Health Gate') {
             steps {
                 script {
                     def healthy = false
                     for (int i = 0; i < 5; i++) {
                         def status = sh(
-                            script: "curl -s -o /dev/null -w '%{http_code}' http://localhost:8001/health || true",
+                            script: "curl -s -o /dev/null -w '%{http_code}' http://host.docker.internal:8001/health || true",
                             returnStdout: true
                         ).trim()
                         echo "Health check attempt ${i + 1}: HTTP ${status}"
