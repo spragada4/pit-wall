@@ -49,12 +49,52 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
+                stage('Race Start: Canary Deploy') {
+            steps {
+                sh '''
+                    docker stop pit-wall-canary || true
+                    docker rm pit-wall-canary || true
+                    docker run -d --name pit-wall-canary -p 8001:8000 ${IMAGE_NAME}:${IMAGE_TAG}
+                    sleep 3
+                '''
+            }
+        }
+
+        stage('Safety Car: Health Gate') {
+            steps {
+                script {
+                    def healthy = false
+                    for (int i = 0; i < 5; i++) {
+                        def status = sh(
+                            script: "curl -s -o /dev/null -w '%{http_code}' http://localhost:8001/health || true",
+                            returnStdout: true
+                        ).trim()
+                        echo "Health check attempt ${i + 1}: HTTP ${status}"
+                        if (status == "200") {
+                            healthy = true
+                            break
+                        }
+                        sleep 2
+                    }
+                    if (!healthy) {
+                        sh '''
+                            docker stop pit-wall-canary || true
+                            docker rm pit-wall-canary || true
+                        '''
+                        error("Safety car deployed: canary failed health checks. Rolled back — production untouched.")
+                    }
+                }
+            }
+        }
+
+        stage('Podium: Promote to Production') {
             steps {
                 sh '''
                     docker stop pit-wall-app || true
                     docker rm pit-wall-app || true
-                    docker run -d --name pit-wall-app -p 8000:8000 ${IMAGE_NAME}:latest
+                    docker stop pit-wall-canary || true
+                    docker rm pit-wall-canary || true
+                    docker run -d --name pit-wall-app -p 8000:8000 ${IMAGE_NAME}:${IMAGE_TAG}
                 '''
             }
         }
