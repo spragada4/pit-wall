@@ -71,3 +71,4 @@ Jenkins is configured with a webhook-triggered pipeline (`Jenkinsfile`) that run
 - [ ] Chaos demo: deliberately break the canary, capture and document the pipeline catching it
 - [ ] Terraform for environment provisioning
 - [ ] Basic observability (structured logs or Prometheus/Grafana)
+
